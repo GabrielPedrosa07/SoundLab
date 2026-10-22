@@ -1,10 +1,10 @@
 """
-SoundLab — versão 7 (Aula 07 / Semana 1).
+SoundLab — versão 8 (Aula 08 / Semana 2).
 
-O SoundLab ganhou fila de execução ("a seguir") e modo de repetição.
-A fila organiza as faixas que tocarão a seguir em ordem de chegada (FIFO).
-No modo de repetição (fila circular), a faixa que acabou de tocar volta
-automaticamente para o final da fila para tocar novamente em ciclo.
+O SoundLab agora conta com índice do acervo em Árvore Binária.
+Além da fila de execução e do modo de repetição (Semana 1), agora é
+possível percorrer o acervo nos três percursos clássicos da árvore:
+pré-ordem, em-ordem e pós-ordem, exibidos lado a lado.
 
     python main.py
 """
@@ -15,12 +15,14 @@ try:
     from soundlab.fila import FilaExecucao
     from soundlab.pilha import Pilha
     from soundlab.playlist import Playlist
+    from soundlab.arvore import ArvoreBinaria
 except ImportError:
     from acervo import Acervo
     from faixa import Faixa
     from fila import FilaExecucao
     from pilha import Pilha
     from playlist import Playlist
+    from arvore import ArvoreBinaria
 
 OPCOES = """
 +------------------- SoundLab -------------------+
@@ -37,6 +39,8 @@ OPCOES = """
                            15  Tocar proxima da fila
                            16  Alternar modo repeticao
                            17  Ver fila a seguir
+
+                           18  Ver percursos da arvore
  0  Sair
 +------------------------------------------------+"""
 
@@ -175,6 +179,32 @@ def ver_fila(fila):
         print(f"    {posicao}. {faixa}")
 
 
+def ver_percursos_arvore(acervo):
+    if len(acervo) == 0:
+        print("  acervo vazio")
+        return
+
+    arvore = ArvoreBinaria()
+    for faixa in acervo:
+        arvore.inserir(faixa)
+
+    pre = [f.titulo for f in arvore.pre_ordem()]
+    em = [f.titulo for f in arvore.em_ordem()]
+    pos = [f.titulo for f in arvore.pos_ordem()]
+
+    print("\n  Percursos da Arvore Binaria (Indice do Acervo):")
+    print(f"  {'PRE-ORDEM':<26} | {'EM-ORDEM':<26} | {'POS-ORDEM':<26}")
+    print("  " + "-" * 82)
+
+    total = max(len(pre), len(em), len(pos))
+    for i in range(total):
+        p = pre[i] if i < len(pre) else ""
+        e = em[i] if i < len(em) else ""
+        po = pos[i] if i < len(pos) else ""
+        print(f"  {p:<26} | {e:<26} | {po:<26}")
+    print("  " + "-" * 82)
+
+
 def main():
     acervo = carregar_acervo()
     playlist = Playlist("Favoritas")
@@ -205,6 +235,7 @@ def main():
             elif opcao == "15": tocar_proxima_fila(fila)
             elif opcao == "16": alternar_repeticao(fila)
             elif opcao == "17": ver_fila(fila)
+            elif opcao == "18": ver_percursos_arvore(acervo)
             else: print("  opcao invalida")
         except (ValueError, IndexError) as erro:
             print(f"  {erro}")
