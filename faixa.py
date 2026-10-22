@@ -1,37 +1,27 @@
-"""
-TAD Faixa — a menor unidade de informação do SoundLab.
-
-Módulo 1 aplicado. O TAD declara:
-
-  Valores    : título, artista, duração em segundos, número de execuções.
-  Operações  : tocar(), duracao_formatada().
-
-Quem usa a Faixa não precisa saber que a duração é guardada em segundos.
-Essa é a ideia central de tipo abstrato de dados: o contrato é público,
-a representação é detalhe interno.
-"""
-
-
+# TAD - Tipo Abstrato de Dados declara:
+# valores: titulo, artista, duração em segundos e número de execuções
+# operações: tocar(), duracao_formatada
 class Faixa:
-    """Uma música do acervo."""
-
+    # método construtor
     def __init__(self, titulo, artista, duracao_seg):
         self.titulo = titulo
         self.artista = artista
         self.duracao_seg = duracao_seg
-        self.execucoes = 0
+        self.num_execucoes = 0
 
+    # método tocar() - incrementa o número de execuções
     def tocar(self):
-        """Registra mais uma execução. Na Aula 12 este número vira critério
-        de ordenação do ranking."""
-        self.execucoes += 1
+        # registra mais uma execução da faixa
+        self.num_execucoes += 1
 
+    # método duracao_formatada() - retorna a duração no formato mm:ss
     def duracao_formatada(self):
-        """Converte a representação interna (segundos) para o formato que o
-        usuário entende (minutos:segundos)."""
+        # converte a representação interna (segundos) para o formato
+        # que o usuário entende (mm:ss)
         minutos = self.duracao_seg // 60
         segundos = self.duracao_seg % 60
-        return f"{minutos}:{segundos:02d}"
+        return f"{minutos:02d}:{segundos:02d}"
 
+    # imprime os dados da faixa - método __str__()
     def __str__(self):
         return f"{self.titulo} - {self.artista} ({self.duracao_formatada()})"
