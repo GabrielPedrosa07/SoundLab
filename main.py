@@ -1,10 +1,9 @@
 """
-SoundLab — versão 8 (Aula 08 / Semana 2).
+SoundLab — versão 9 (Aula 09 / Semana 3).
 
-O SoundLab agora conta com índice do acervo em Árvore Binária.
-Além da fila de execução e do modo de repetição (Semana 1), agora é
-possível percorrer o acervo nos três percursos clássicos da árvore:
-pré-ordem, em-ordem e pós-ordem, exibidos lado a lado.
+O SoundLab agora possui uma Árvore Binária de Busca (ABB) ordenada por
+título. Isso permite buscar faixas em O(log n) médio e listar o acervo em
+ordem alfabética reaproveitando o percurso em-ordem da Semana 2.
 
     python main.py
 """
@@ -16,6 +15,7 @@ try:
     from soundlab.pilha import Pilha
     from soundlab.playlist import Playlist
     from soundlab.arvore import ArvoreBinaria
+    from soundlab.arvore_busca import ArvoreBinariaBusca
 except ImportError:
     from acervo import Acervo
     from faixa import Faixa
@@ -23,6 +23,7 @@ except ImportError:
     from pilha import Pilha
     from playlist import Playlist
     from arvore import ArvoreBinaria
+    from arvore_busca import ArvoreBinariaBusca
 
 OPCOES = """
 +------------------- SoundLab -------------------+
@@ -41,6 +42,8 @@ OPCOES = """
                            17  Ver fila a seguir
 
                            18  Ver percursos da arvore
+                           19  Buscar por titulo (ABB)
+                           20  Listar ordem alfabetica (ABB)
  0  Sair
 +------------------------------------------------+"""
 
@@ -205,6 +208,31 @@ def ver_percursos_arvore(acervo):
     print("  " + "-" * 82)
 
 
+def montar_abb(acervo):
+    abb = ArvoreBinariaBusca()
+    for faixa in acervo:
+        abb.inserir(faixa)
+    return abb
+
+
+def buscar_abb(acervo):
+    abb = montar_abb(acervo)
+    titulo = input("  titulo: ").strip()
+    faixa = abb.buscar(titulo)
+    print(f"  {faixa}" if faixa else "  nao encontrada")
+
+
+def listar_alfabetica_abb(acervo):
+    if len(acervo) == 0:
+        print("  acervo vazio")
+        return
+    abb = montar_abb(acervo)
+    ordenadas = abb.em_ordem()
+    print("  acervo em ordem alfabetica (ABB em-ordem):")
+    for posicao, faixa in enumerate(ordenadas, start=1):
+        print(f"    {posicao}. {faixa}")
+
+
 def main():
     acervo = carregar_acervo()
     playlist = Playlist("Favoritas")
@@ -236,6 +264,8 @@ def main():
             elif opcao == "16": alternar_repeticao(fila)
             elif opcao == "17": ver_fila(fila)
             elif opcao == "18": ver_percursos_arvore(acervo)
+            elif opcao == "19": buscar_abb(acervo)
+            elif opcao == "20": listar_alfabetica_abb(acervo)
             else: print("  opcao invalida")
         except (ValueError, IndexError) as erro:
             print(f"  {erro}")
