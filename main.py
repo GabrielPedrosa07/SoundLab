@@ -1,10 +1,9 @@
 """
-SoundLab — versão 10 (Aula 10 / Semana 4).
+SoundLab — versão 11 (Aula 11 / Semana 5).
 
-O SoundLab agora constrói um Grafo de Recomendação por coocorrência:
-sempre que duas faixas tocam em sequência (na playlist, na fila ou no
-histórico), uma aresta é criada entre elas. A recomendação usa Busca em
-Largura (BFS) para sugerir faixas próximas (distância 1 e 2).
+O SoundLab agora compara na prática o número de comparações da Busca Linear
+O(n) contra a Busca Binária O(log n) aplicada sobre a lista ordenada obtida
+pelo percurso em-ordem da ABB (Semana 3).
 
     python main.py
 """
@@ -18,6 +17,7 @@ try:
     from soundlab.arvore import ArvoreBinaria
     from soundlab.arvore_busca import ArvoreBinariaBusca
     from soundlab.grafo import GrafoRecomendacao
+    from soundlab.busca import busca_linear_contada, busca_binaria_contada
 except ImportError:
     from acervo import Acervo
     from faixa import Faixa
@@ -27,6 +27,7 @@ except ImportError:
     from arvore import ArvoreBinaria
     from arvore_busca import ArvoreBinariaBusca
     from grafo import GrafoRecomendacao
+    from busca import busca_linear_contada, busca_binaria_contada
 
 OPCOES = """
 +------------------- SoundLab -------------------+
@@ -48,6 +49,7 @@ OPCOES = """
                            19  Buscar por titulo (ABB)
                            20  Listar ordem alfabetica (ABB)
                            21  Recomendar a partir de faixa
+                           22  Comparar buscas (Linear vs Binaria)
  0  Sair
 +------------------------------------------------+"""
 
@@ -58,6 +60,8 @@ def carregar_acervo():
     acervo.adicionar(Faixa("Construcao", "Chico Buarque", 382))
     acervo.adicionar(Faixa("Ponta de Areia", "Milton Nascimento", 194))
     acervo.adicionar(Faixa("Baiao", "Luiz Gonzaga", 168))
+    acervo.adicionar(Faixa("Trem das Onze", "Adoniran Barbosa", 175))
+    acervo.adicionar(Faixa("Garota de Ipanema", "Tom Jobim", 210))
     return acervo
 
 
@@ -276,6 +280,40 @@ def recomendar_faixas(acervo, grafo):
         print(f"    {pos}. {sugerida}")
 
 
+def comparar_buscas(acervo):
+    if len(acervo) == 0:
+        print("  acervo vazio")
+        return
+
+    lista_linear = list(acervo)
+    # Lista ordenada obtida a partir do em_ordem() da ABB da Semana 3
+    abb = montar_abb(acervo)
+    lista_ordenada = abb.em_ordem()
+
+    # Seleciona pelo menos 5 titulos variados (inicio, meio, fim e um inexistente)
+    titulos_teste = [f.titulo for f in lista_linear]
+    titulos_teste.append("Faixa Inexistente")
+
+    print(f"\n  Comparacao de Buscas no Acervo ({len(lista_linear)} faixas):")
+    print(f"  {'TITULO BUSCADO':<26} | {'ACHADO':<8} | {'LINEAR O(n)':<13} | {'BINARIA O(log n)':<16}")
+    print("  " + "-" * 72)
+
+    for titulo in titulos_teste:
+        faixa_lin, comp_lin = busca_linear_contada(lista_linear, titulo)
+        faixa_bin, comp_bin = busca_binaria_contada(lista_ordenada, titulo)
+        achado = "Sim" if faixa_bin is not None else "Nao"
+        print(f"  {titulo:<26} | {achado:<8} | {comp_lin:<13} | {comp_bin:<16}")
+
+    print("  " + "-" * 72)
+    print("  Interpretacao:")
+    print("  - A busca linear O(n) percorre faixa por faixa, chegando a examinar o acervo")
+    print("    inteiro nos elementos do fim ou quando o titulo nao existe.")
+    print("  - A busca binaria O(log n), aplicada sobre a lista ordenada do em_ordem() da ABB,")
+    print("    descarta metade das faixas a cada passo, exigindo no maximo 3 comparacoes.")
+    print("  - Em um acervo pequeno a diferenca absoluta e pequena, mas conforme o acervo")
+    print("    cresce (ex: 100 ou 1000 faixas), o ganho de O(log n) sobre O(n) se torna enorme.")
+
+
 def main():
     acervo = carregar_acervo()
     playlist = Playlist("Favoritas")
@@ -312,6 +350,7 @@ def main():
             elif opcao == "19": buscar_abb(acervo)
             elif opcao == "20": listar_alfabetica_abb(acervo)
             elif opcao == "21": recomendar_faixas(acervo, grafo)
+            elif opcao == "22": comparar_buscas(acervo)
             else: print("  opcao invalida")
         except (ValueError, IndexError) as erro:
             print(f"  {erro}")
