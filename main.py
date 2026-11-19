@@ -1,9 +1,9 @@
 """
-SoundLab — versão 11 (Aula 11 / Semana 5).
+SoundLab — versão 12 (Aula 12 / Semana 6 — Player Completo).
 
-O SoundLab agora compara na prática o número de comparações da Busca Linear
-O(n) contra a Busca Binária O(log n) aplicada sobre a lista ordenada obtida
-pelo percurso em-ordem da ABB (Semana 3).
+O SoundLab agora gera rankings do acervo (por número de execuções e por
+duração) utilizando ordenação por inserção (Insertion Sort) implementada
+manualmente, e confirma que o resultado coincide com o sorted() do Python.
 
     python main.py
 """
@@ -18,6 +18,7 @@ try:
     from soundlab.arvore_busca import ArvoreBinariaBusca
     from soundlab.grafo import GrafoRecomendacao
     from soundlab.busca import busca_linear_contada, busca_binaria_contada
+    from soundlab.ordenacao import ordenar_por_insercao
 except ImportError:
     from acervo import Acervo
     from faixa import Faixa
@@ -28,6 +29,7 @@ except ImportError:
     from arvore_busca import ArvoreBinariaBusca
     from grafo import GrafoRecomendacao
     from busca import busca_linear_contada, busca_binaria_contada
+    from ordenacao import ordenar_por_insercao
 
 OPCOES = """
 +------------------- SoundLab -------------------+
@@ -50,6 +52,7 @@ OPCOES = """
                            20  Listar ordem alfabetica (ABB)
                            21  Recomendar a partir de faixa
                            22  Comparar buscas (Linear vs Binaria)
+                           23  Ranking do acervo (ordenacao)
  0  Sair
 +------------------------------------------------+"""
 
@@ -314,6 +317,36 @@ def comparar_buscas(acervo):
     print("    cresce (ex: 100 ou 1000 faixas), o ganho de O(log n) sobre O(n) se torna enorme.")
 
 
+def exibir_ranking(acervo):
+    if len(acervo) == 0:
+        print("  acervo vazio")
+        return
+
+    lista = list(acervo)
+
+    # 1. Ranking por duracao (crescente) e comparacao com sorted()
+    chave_duracao = lambda f: f.duracao_seg
+    ranking_duracao = ordenar_por_insercao(lista, chave_duracao)
+    referencia_duracao = sorted(lista, key=chave_duracao)
+
+    print("\n  Ranking do Acervo por Duracao (Ordenacao por Insercao):")
+    for pos, faixa in enumerate(ranking_duracao, start=1):
+        print(f"    {pos}. {faixa} [{faixa.duracao_seg}s]")
+    coincide_dur = ranking_duracao == referencia_duracao
+    print(f"  [Verificacao com sorted(acervo, key=duracao_seg): {'IDENTICO' if coincide_dur else 'DIFERENTE'}]")
+
+    # 2. Ranking por numero de execucoes (mais tocadas primeiro) e comparacao com sorted()
+    chave_exec = lambda f: f.num_execucoes
+    ranking_exec = ordenar_por_insercao(lista, chave_exec, decrescente=True)
+    referencia_exec = sorted(lista, key=chave_exec, reverse=True)
+
+    print("\n  Ranking do Acervo por Execucoes — Mais Tocadas (Ordenacao por Insercao):")
+    for pos, faixa in enumerate(ranking_exec, start=1):
+        print(f"    {pos}. {faixa} - {faixa.num_execucoes} execucao(oes)")
+    coincide_exec = ranking_exec == referencia_exec
+    print(f"  [Verificacao com sorted(acervo, key=num_execucoes, reverse=True): {'IDENTICO' if coincide_exec else 'DIFERENTE'}]")
+
+
 def main():
     acervo = carregar_acervo()
     playlist = Playlist("Favoritas")
@@ -351,6 +384,7 @@ def main():
             elif opcao == "20": listar_alfabetica_abb(acervo)
             elif opcao == "21": recomendar_faixas(acervo, grafo)
             elif opcao == "22": comparar_buscas(acervo)
+            elif opcao == "23": exibir_ranking(acervo)
             else: print("  opcao invalida")
         except (ValueError, IndexError) as erro:
             print(f"  {erro}")
